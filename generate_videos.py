@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import torch
 import torch.nn as nn
 from model.networks import Generator
-import cfg
 import skvideo.io
 import numpy as np
 import os
@@ -21,11 +20,11 @@ def save_videos(path, vids, epoch, bs):
 
 def main(args):
 
-	device = torch.device("cuda:0")
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 	G = Generator().to(device)
 	G = nn.DataParallel(G)
-	G.load_state_dict(torch.load(args.model_path))
+	G.load_state_dict(torch.load(args.model_path, map_location=device))
 
 	with torch.no_grad():
 		G.eval()
@@ -61,8 +60,8 @@ if __name__ == '__main__':
 	parser.add_argument("--batch_size", type=int, default=64)
 	parser.add_argument("--d_za", type=int, default=128)
 	parser.add_argument("--d_zm", type=int, default=10)
-	parser.add_argument("--model_path", type=str, default='./g3an.pth')
-	parser.add_argument("--gen_path", type=str)
+	parser.add_argument("--model_path", type=str, default='./pretrained/mug.pth')
+	parser.add_argument("--gen_path", type=str, default=".")
 	args = parser.parse_args()
 
 	main(args)
